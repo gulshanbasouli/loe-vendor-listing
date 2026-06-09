@@ -1,12 +1,14 @@
 <?php
 /**
-*Plugin Name: All Vendor Listing
-*Author: Webchefz.com
-*Author URI: https://www.webchefz.com
-*Description: WBC  display all vendors
-*Plugin URI:  https://www.webchefz.com/wbc-advanced-review
-*Version: 0.1
-*/
+ * Plugin Name: All Vendor Listing
+ * Plugin URI: https://loeion.com
+ * Description: Display all vendors in a centralized admin listing.
+ * Version: 1.0.0
+ * Author: Loeion Infotech
+ * Author URI: https://loeion.com
+ * License: GPL v2 or later
+ * Text Domain: loe-all-vendors
+ */
 
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 require_once(ABSPATH.'wp-admin/includes/plugin.php'); 
@@ -18,30 +20,52 @@ add_filter('pre_site_transient_update_plugins','__return_null');
 
 // Admin hooks
 
-function WBC_AllVendorsAdminAction() {
+function LOE_AllVendorsAdminAction() {
 
    add_menu_page('All Vendors', 'All Vendors', 'manage_options', __FILE__, 'WBC_All_Vendors', "dashicons-admin-users",7);
 
 }
  
-add_action('admin_menu', 'WBC_AllVendorsAdminAction');
+add_action('admin_menu', 'LOE_AllVendorsAdminAction');
 
-function WBC_All_Vendors() { 
+function LOE_All_Vendors() { 
 
-  include 'inc/wbc-vendor-listing.php';
+  require_once plugin_dir_path( __FILE__ ) . 'inc/loe-vendor-listing.php';
 }
 
 
 /* Save selected data */
-add_action( 'personal_options_update', 'save_user_fields' );
-add_action( 'edit_user_profile_update', 'save_user_fields' );
 
-function save_user_fields( $user_id ) {
 
-if ( !current_user_can( 'edit_user', $user_id ) )
-    return false;
+add_action(
+    'personal_options_update',
+    'loe_save_user_fields'
+);
 
-update_usermeta( $user_id, 'country', $_POST['country'] );
+add_action(
+    'edit_user_profile_update',
+    'loe_save_user_fields'
+);
+
+function loe_save_user_fields( $user_id ) {
+
+    if ( ! current_user_can( 'edit_user', $user_id ) ) {
+        return false;
+    }
+
+    if ( isset( $_POST['country'] ) ) {
+
+        update_user_meta(
+            $user_id,
+            'country',
+            sanitize_text_field(
+                wp_unslash(
+                    $_POST['country']
+                )
+            )
+        );
+
+    }
 }
 
 add_action( 'show_user_profile', 'Add_user_fields' );
